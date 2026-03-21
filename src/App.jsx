@@ -200,11 +200,23 @@ export default function App() {
   async function handleAuthSubmit(e) {
     e.preventDefault()
     if (!hasSupabaseEnv) return setMessage('Adaugă VITE_SUPABASE_URL și VITE_SUPABASE_ANON_KEY în fișierul .env.')
-    const fn = authMode === 'login' ? supabase.auth.signInWithPassword : supabase.auth.signUp
     const payload = authMode === 'login'
-      ? { email: authForm.email, password: authForm.password }
-      : { email: authForm.email, password: authForm.password, options: { emailRedirectTo: window.location.origin } }
-    const { error } = await fn(payload)
+  ? { email: authForm.email, password: authForm.password }
+  : { 
+      email: authForm.email, 
+      password: authForm.password, 
+      options: { emailRedirectTo: window.location.origin } 
+    }
+
+let error
+
+if (authMode === 'login') {
+  const res = await supabase.auth.signInWithPassword(payload)
+  error = res.error
+} else {
+  const res = await supabase.auth.signUp(payload)
+  error = res.error
+}
     setMessage(error ? error.message : authMode === 'login' ? 'Autentificat.' : 'Cont creat. Verifică emailul dacă Supabase cere confirmare.')
   }
 
